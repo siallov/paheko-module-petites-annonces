@@ -1,0 +1,47 @@
+{{:include file="./_display_head.html" title="Supprimer une annonce"}}
+
+<div class="petites-annonces">
+<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+	{{:linkbutton href="index.html" label="Voir les annonces"}}
+	{{:include file="./_return_site.html"}}
+</p>
+
+{{#load id=$_GET.id|intval assign="annonce"}}
+{{else}}
+	{{:error message="Cette annonce n'existe pas."}}
+{{/load}}
+
+{{#restrict section="config" level="admin"}}
+{{else}}
+	{{if $annonce.id_auteur != $logged_user.id}}
+		{{:error message="Vous ne pouvez supprimer que vos propres annonces, sauf si vous êtes administrateur."}}
+	{{/if}}
+{{/restrict}}
+
+{{#form on="delete"}}
+	{{if !$_POST.confirm_delete}}
+		{{:error message="Cochez la case pour confirmer la suppression."}}
+	{{/if}}
+	{{#restrict section="config" level="admin"}}
+	{{else}}
+		{{if $annonce.id_auteur != $logged_user.id}}
+			{{:error message="Vous ne pouvez supprimer que vos propres annonces, sauf si vous êtes administrateur."}}
+		{{/if}}
+	{{/restrict}}
+	{{:assign photo_path="annonces/%d"|args:$annonce.id}}
+	{{:delete_file path=$photo_path}}
+	{{:delete id=$annonce.id}}
+	{{:redirect to="index.html"}}
+{{/form}}
+
+{{:form_errors}}
+
+{{:delete_form
+	legend="Suppression d'une annonce"
+	warning="Supprimer l'annonce « %s » ?"|args:$annonce.titre
+	confirm="Je confirme la suppression définitive de cette annonce"
+}}
+</div>
+
+{{:include file="./_display_foot.html"}}

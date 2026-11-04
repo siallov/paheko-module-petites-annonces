@@ -1,0 +1,82 @@
+{{:include file="./_display_head.html" title="Créer une annonce"}}
+
+<div class="petites-annonces">
+<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+	{{:linkbutton href="index.html" label="Retour au menu"}}
+	{{:include file="./_return_site.html"}}
+</p>
+
+{{#form on="enregistrer"}}
+	{{if $_POST.titre|trim === ''}}
+		{{:error message="Le titre de l'annonce est obligatoire."}}
+	{{/if}}
+	{{:assign prix=0}}
+	{{if !$_POST.don}}
+		{{:assign prix=$_POST.prix|trim|money_int}}
+	{{/if}}
+
+	{{#users id=$logged_user.id}}
+		{{if $_name|trim === ''}}
+			{{:error message="Votre nom et prénom sont indispensables pour publier une annonce. Merci de les renseigner dans votre fiche membre."}}
+		{{/if}}
+		{{:save
+			validate_schema="./document.schema.json"
+			assign_new_id="annonce_id"
+			titre=$_POST.titre|trim
+			description=$_POST.description|trim
+			categorie=$_POST.categorie
+			prix=$prix
+			don=$_POST.don|intval
+			date_creation=$now|date:"Y-m-d H:i:s"
+			id_auteur=$logged_user.id|intval
+			id_auteur_nom=$_name
+			id_auteur_email=$email|trim
+		}}
+		{{:redirect to="photos.html?id=%d"|args:$annonce_id}}
+	{{else}}
+		{{:error message="Impossible de retrouver le nom du membre connecté."}}
+	{{/users}}
+{{/form}}
+
+{{:form_errors}}
+
+<p class="annonces-info" role="note"><strong>Important :</strong> le règlement des articles se fait directement auprès du vendeur, c’est-à-dire vous. Vos nom et prénom sont donc indispensables : ils seront affichés sur votre annonce pour que les acheteurs puissent vous contacter.</p>
+<p class="annonce-form-intro">Après la publication, vous pourrez ajouter jusqu'à trois photos à votre annonce.</p>
+<form method="post" action="">
+	<p>
+		<label for="f_titre">Titre de l'annonce</label>
+		<input type="text" name="titre" id="f_titre" required maxlength="150" value="{{$_POST.titre}}">
+	</p>
+	<p>
+		<label for="f_categorie">Rubrique</label>
+		<select name="categorie" id="f_categorie" required>
+			<option value="peintures_techniques" {{if $_POST.categorie == "peintures_techniques"}}selected{{/if}}>Peintures &amp; Techniques</option>
+			<option value="pinceaux_outils_application" {{if $_POST.categorie == "pinceaux_outils_application"}}selected{{/if}}>Pinceaux &amp; Outils d'application</option>
+			<option value="supports_peindre" {{if $_POST.categorie == "supports_peindre"}}selected{{/if}}>Supports à peindre</option>
+			<option value="chevalets_mobilier_atelier" {{if $_POST.categorie == "chevalets_mobilier_atelier"}}selected{{/if}}>Chevalets &amp; Mobilier d’atelier</option>
+			<option value="rangement_transport" {{if $_POST.categorie == "rangement_transport"}}selected{{/if}}>Rangement &amp; Transport</option>
+			<option value="autres" {{if $_POST.categorie == "autres" || !$_POST.categorie}}selected{{/if}}>Autres</option>
+		</select>
+	</p>
+	<p>
+		<label for="f_description">Description</label>
+		<textarea name="description" id="f_description" maxlength="5000">{{$_POST.description}}</textarea>
+	</p>
+	<p id="ligne-prix" {{if $_POST.don}}hidden{{/if}}>
+		<label for="f_prix">Prix (€)</label>
+		<input type="number" name="prix" id="f_prix" step="0.01" min="0" value="{{$_POST.prix}}">
+	</p>
+	<p class="annonce-don-row">
+		<label class="annonce-don-choice">
+			<input type="checkbox" name="don" value="1" {{if $_POST.don}}checked{{/if}}>
+			<span class="annonce-don-badge">Don</span>
+			<span id="texte-option-don">Cliquer ici pour proposer votre annonce sans paiement</span>
+		</label>
+	</p>
+	<p class="annonce-submit-row">{{:button type="submit" name="enregistrer" label="Publier et ajouter des photos"}}</p>
+</form>
+<script src="{{$module.url}}don.js" defer></script>
+</div>
+
+{{:include file="./_display_foot.html"}}

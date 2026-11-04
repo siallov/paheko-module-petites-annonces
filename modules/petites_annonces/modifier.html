@@ -1,0 +1,95 @@
+{{:include file="./_display_head.html" title="Modifier une annonce"}}
+
+<div class="petites-annonces">
+<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+	{{:linkbutton href="index.html" label="Voir les annonces"}}
+	{{:include file="./_return_site.html"}}
+</p>
+
+{{#load id=$_GET.id|intval assign="annonce"}}
+{{else}}
+	{{:error message="Cette annonce n'existe pas."}}
+{{/load}}
+
+{{#restrict section="config" level="admin"}}
+{{else}}
+	{{if $annonce.id_auteur != $logged_user.id}}
+		{{:error message="Seul l'auteur ou un administrateur peut modifier cette annonce."}}
+	{{/if}}
+{{/restrict}}
+
+{{#form on="enregistrer"}}
+	{{if $_POST.titre|trim === ''}}
+		{{:error message="Le titre de l'annonce est obligatoire."}}
+	{{/if}}
+	{{:assign prix=0}}
+	{{if !$_POST.don}}
+		{{:assign prix=$_POST.prix|trim|money_int}}
+	{{/if}}
+	{{:save
+		id=$annonce.id
+		validate_schema="./document.schema.json"
+		titre=$_POST.titre|trim
+		description=$_POST.description|trim
+		categorie=$_POST.categorie
+		prix=$prix
+		don=$_POST.don|intval
+	}}
+	{{:redirect to="index.html"}}
+{{/form}}
+
+{{:form_errors}}
+
+{{if $_POST.enregistrer}}
+	{{:assign titre=$_POST.titre}}
+	{{:assign description=$_POST.description}}
+	{{:assign prix_form=$_POST.prix}}
+	{{:assign categorie_form=$_POST.categorie}}
+{{else}}
+	{{:assign titre=$annonce.titre}}
+	{{:assign description=$annonce.description}}
+	{{:assign prix_form=$annonce.prix|money_raw}}
+	{{:assign categorie_form=$annonce.categorie}}
+{{if !$categorie_form}}
+	{{:assign categorie_form="autres"}}
+{{/if}}
+{{/if}}
+
+<form method="post" action="">
+	<p>
+		<label for="f_titre">Titre de l'annonce</label>
+		<input type="text" name="titre" id="f_titre" required maxlength="150" value="{{$titre}}">
+	</p>
+	<p>
+		<label for="f_categorie">Rubrique</label>
+		<select name="categorie" id="f_categorie" required>
+			<option value="peintures_techniques" {{if $categorie_form == "peintures_techniques"}}selected{{/if}}>Peintures &amp; Techniques</option>
+			<option value="pinceaux_outils_application" {{if $categorie_form == "pinceaux_outils_application"}}selected{{/if}}>Pinceaux &amp; Outils d'application</option>
+			<option value="supports_peindre" {{if $categorie_form == "supports_peindre"}}selected{{/if}}>Supports à peindre</option>
+			<option value="chevalets_mobilier_atelier" {{if $categorie_form == "chevalets_mobilier_atelier"}}selected{{/if}}>Chevalets &amp; Mobilier d’atelier</option>
+			<option value="rangement_transport" {{if $categorie_form == "rangement_transport"}}selected{{/if}}>Rangement &amp; Transport</option>
+			<option value="autres" {{if $categorie_form == "autres"}}selected{{/if}}>Autres</option>
+		</select>
+	</p>
+	<p>
+		<label for="f_description">Description</label>
+		<textarea name="description" id="f_description" maxlength="5000">{{$description}}</textarea>
+	</p>
+	<p id="ligne-prix" {{if $annonce.don == 1}}hidden{{/if}}>
+		<label for="f_prix">Prix (€)</label>
+		<input type="number" name="prix" id="f_prix" step="0.01" min="0" value="{{$prix_form}}">
+	</p>
+	<p class="annonce-don-row">
+		<label class="annonce-don-choice">
+			<input type="checkbox" name="don" value="1" {{if $_POST.enregistrer}}{{if $_POST.don}}checked{{/if}}{{else}}{{if $annonce.don == 1}}checked{{/if}}{{/if}}>
+			<span class="annonce-don-badge">Don</span>
+			<span id="texte-option-don">Cliquer ici pour proposer votre annonce sans paiement</span>
+		</label>
+	</p>
+	<p class="annonce-submit-row">{{:button type="submit" name="enregistrer" label="Enregistrer les modifications"}}</p>
+</form>
+<script src="{{$module.url}}don.js" defer></script>
+</div>
+
+{{:include file="./_display_foot.html"}}

@@ -1,0 +1,7 @@
+{
+    "name": "Petites annonces",
+    "description": "Permet aux membres de publier et consulter des annonces d'occasion ou de services.",
+    "author": "Votre association",
+    "version": "1.2.15",
+    "menu": true
+}

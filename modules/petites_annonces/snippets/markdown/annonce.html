@@ -1,0 +1,92 @@
+{{:admin_header layout="public" custom_css=$module.url|cat:"style.css"}}
+
+<div class="petites-annonces">
+	<p class="annonces-menu">
+		{{:linkbutton href="index.html" label="Toutes les annonces"}}
+		{{:linkbutton href="mes_annonces.html" label="Modifier vos annonces"}}
+		{{:linkbutton href="creer.html" label="Créer une annonce" shape="plus"}}
+		{{:include file="/petites_annonces/_return_site.html"}}
+	</p>
+
+{{#load id=$_GET.id|intval}}
+	<article class="annonce-detail">
+		<h1>{{$titre}}</h1>
+		<p class="annonce-categorie">
+			{{if $categorie == "peintures_techniques"}}Peintures &amp; Techniques{{/if}}
+			{{if $categorie == "pinceaux_outils_application"}}Pinceaux &amp; Outils d'application{{/if}}
+			{{if $categorie == "supports_peindre"}}Supports à peindre{{/if}}
+			{{if $categorie == "chevalets_mobilier_atelier"}}Chevalets &amp; Mobilier d’atelier{{/if}}
+			{{if $categorie == "rangement_transport"}}Rangement &amp; Transport{{/if}}
+			{{if $categorie == "autres" || !$categorie}}Autres{{/if}}
+		</p>
+		{{if $don == 1}}
+			<p class="annonce-prix"><strong>Don</strong></p>
+		{{elseif $prix}}
+			<p class="annonce-prix">Prix : {{$prix|money_currency}}</p>
+		{{else}}
+			<p class="annonce-prix">Prix : à convenir</p>
+		{{/if}}
+		{{if $description}}
+			<p>{{$description|nl2br}}</p>
+		{{/if}}
+
+		{{:assign photo_path="annonces/%d"|args:$id}}
+		<div class="annonce-photos">
+			{{#files path=$photo_path}}
+				{{if $mime|substr:0:6 == "image/"}}
+					<button type="button" class="annonce-photo-lien" data-photo="{{$url}}" aria-label="Agrandir la photo"><img src="{{$url}}" loading="lazy" decoding="async" alt="Photo de l'annonce"></button>
+				{{/if}}
+			{{/files}}
+		</div>
+
+		<div class="annonce-vendeur">
+			<p>
+				<strong>Vendeur :</strong>
+				{{if $id_auteur_nom|trim}}
+					{{$id_auteur_nom}}
+				{{else}}
+					{{#users id=$id_auteur}}{{$_name}}{{else}}membre n°{{$id_auteur}}{{/users}}
+				{{/if}}
+			</p>
+			<p>
+				{{if $id_auteur_email|trim}}
+					<strong>E-mail :</strong> <a href="mailto:{{$id_auteur_email|trim}}">{{$id_auteur_email|trim}}</a>
+					<br><a class="button" href="mailto:{{$id_auteur_email|trim}}">Envoyer un e-mail au vendeur</a>
+				{{else}}
+					{{#users id=$id_auteur}}
+						{{if $email}}
+							<strong>E-mail :</strong> <a href="mailto:{{$email}}">{{$email}}</a>
+							<br><a class="button" href="mailto:{{$email}}">Envoyer un e-mail au vendeur</a>
+						{{/if}}
+					{{/users}}
+				{{/if}}
+			</p>
+			<p><small>Le règlement se fait directement auprès du vendeur. Annonce publiée le {{$date_creation|date_short}}.</small></p>
+		</div>
+
+		{{#restrict section="config" level="admin"}}
+			<p class="annonce-actions">
+				{{:linkbutton href="modifier.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+				{{:linkbutton href="supprimer.html?id=%d"|args:$id label="Supprimer" shape="delete"}}
+			</p>
+		{{else}}
+			{{if $id_auteur == $logged_user.id}}
+				<p class="annonce-actions">
+					{{:linkbutton href="modifier.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+					{{:linkbutton href="supprimer.html?id=%d"|args:$id label="Supprimer" shape="delete"}}
+				</p>
+			{{/if}}
+		{{/restrict}}
+	</article>
+{{else}}
+	{{:error message="Cette annonce n'existe pas."}}
+{{/load}}
+</div>
+
+<dialog class="annonce-photo-apercu" aria-label="Agrandissement de la photo">
+	<button type="button" class="annonce-photo-fermer" aria-label="Fermer l’aperçu">×</button>
+	<img alt="">
+</dialog>
+<script src="{{$module.url}}apercu.js" defer></script>
+
+{{:admin_footer}}

@@ -1,0 +1,106 @@
+{{:include file="./_display_head.html" title="Petites annonces"}}
+
+<div class="petites-annonces">
+	<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+		{{:linkbutton href="index.html" label="Toutes les annonces"}}
+		{{:linkbutton href="mes_annonces.html" label="Modifier vos annonces"}}
+		{{:linkbutton href="creer.html" label="Créer une annonce" shape="plus"}}
+		{{:include file="./_return_site.html"}}
+	</p>
+
+{{#load id=$_GET.id|intval}}
+	<article class="annonce-detail">
+		<h1>{{$titre}}</h1>
+		<p class="annonce-categorie">
+			{{if $categorie == "peintures_techniques"}}Peintures &amp; Techniques{{/if}}
+			{{if $categorie == "pinceaux_outils_application"}}Pinceaux &amp; Outils d'application{{/if}}
+			{{if $categorie == "supports_peindre"}}Supports à peindre{{/if}}
+			{{if $categorie == "chevalets_mobilier_atelier"}}Chevalets &amp; Mobilier d’atelier{{/if}}
+			{{if $categorie == "rangement_transport"}}Rangement &amp; Transport{{/if}}
+			{{if $categorie == "autres" || !$categorie}}Autres{{/if}}
+		</p>
+		{{if $don == 1}}
+			<p class="annonce-prix"><strong>Don</strong></p>
+		{{elseif $prix}}
+			<p class="annonce-prix">Prix : {{$prix|money_currency}}</p>
+		{{else}}
+			<p class="annonce-prix">Prix : à convenir</p>
+		{{/if}}
+		{{if $description}}
+			<p>{{$description|nl2br}}</p>
+		{{/if}}
+
+		{{:assign photo_path="annonces/%d"|args:$id}}
+		<div class="annonce-photos">
+			{{#files path=$photo_path}}
+				{{if $mime|substr:0:6 == "image/"}}
+					<button type="button" class="annonce-photo-lien" data-photo="{{$url}}" aria-label="Agrandir la photo"><img src="{{$url}}" loading="lazy" decoding="async" alt="Photo de l'annonce"></button>
+				{{/if}}
+			{{/files}}
+		</div>
+
+		<div class="annonce-vendeur">
+			<p>
+				<strong>Vendeur :</strong>
+				{{if $id_auteur_nom|trim}}
+					{{$id_auteur_nom}}
+				{{else}}
+					{{#users id=$id_auteur}}{{$_name}}{{else}}membre n°{{$id_auteur}}{{/users}}
+				{{/if}}
+			</p>
+			{{:assign contact_email=$id_auteur_email|trim}}
+			{{if !$contact_email}}
+				{{#users id=$id_auteur}}{{:assign contact_email=$email|trim}}{{/users}}
+			{{/if}}
+			{{if $contact_email}}
+				{{if $don == 1}}
+					{{:assign contact_prix="Don"}}
+				{{elseif $prix}}
+					{{:assign contact_prix=$prix|money_currency|strip_tags}}
+				{{else}}
+					{{:assign contact_prix="À convenir"}}
+				{{/if}}
+				{{:assign contact_subject="Intérêt pour l'annonce n°%d : %s"|args:$id:$titre}}
+				{{:assign contact_body="Bonjour,
+
+Ton annonce m’intéresse ! Est-ce que c’est toujours disponible ? Si oui, on peut s’arranger pour se retrouver au cours à la Loge ou par téléphone.
+
+Référence : annonce n°%d
+Titre : %s
+Prix : %s
+Descriptif : %s
+Lien : %sannonce.html?id=%d
+
+Merci et à bientôt !"|args:$id:$titre:$contact_prix:$description:$module.url:$id}}
+				<p><a class="button" href="mailto:{{$contact_email}}?subject={{$contact_subject|url_encode}}&amp;body={{$contact_body|url_encode}}">Contacter le vendeur</a></p>
+			{{/if}}
+			<p><small>Le règlement se fait directement auprès du vendeur. Annonce publiée le {{$date_creation|date_short}}.</small></p>
+		</div>
+
+		{{#restrict section="config" level="admin"}}
+			<p class="annonce-actions">
+				{{:linkbutton href="modifier.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+				{{:linkbutton href="supprimer.html?id=%d"|args:$id label="Supprimer" shape="delete"}}
+			</p>
+		{{else}}
+			{{if $id_auteur == $logged_user.id}}
+				<p class="annonce-actions">
+					{{:linkbutton href="modifier.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+					{{:linkbutton href="supprimer.html?id=%d"|args:$id label="Supprimer" shape="delete"}}
+				</p>
+			{{/if}}
+		{{/restrict}}
+	</article>
+{{else}}
+	{{:error message="Cette annonce n'existe pas."}}
+{{/load}}
+</div>
+
+<dialog class="annonce-photo-apercu" aria-label="Agrandissement de la photo">
+	<button type="button" class="annonce-photo-fermer" aria-label="Fermer l’aperçu">×</button>
+	<img alt="">
+</dialog>
+<script src="{{$module.url}}apercu.js" defer></script>
+
+{{:include file="./_display_foot.html"}}

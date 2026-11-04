@@ -1,0 +1,65 @@
+{{:include file="./_display_head.html" title="Petites annonces"}}
+
+<div class="petites-annonces">
+	<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+		{{:linkbutton href="index.html" label="Toutes les annonces"}}
+		{{:linkbutton href="mes_annonces.html" label="Modifier vos annonces"}}
+		{{:linkbutton href="creer.html" label="Créer une annonce" shape="plus"}}
+		{{:include file="./_return_site.html"}}
+</p>
+
+	<p class="annonces-info" role="note"><strong>Important :</strong> le règlement des articles mis en vente se fait directement auprès du vendeur. Le nom et le prénom du vendeur sont donc indispensables : ils figurent sur chaque annonce pour vous permettre de le contacter.</p>
+
+	<h1 class="annonces-rubrique-titre">
+		{{if $_GET.categorie == "peintures_techniques"}}Peintures &amp; Techniques{{/if}}
+		{{if $_GET.categorie == "pinceaux_outils_application"}}Pinceaux &amp; Outils d'application{{/if}}
+		{{if $_GET.categorie == "supports_peindre"}}Supports à peindre{{/if}}
+		{{if $_GET.categorie == "chevalets_mobilier_atelier"}}Chevalets &amp; Mobilier d’atelier{{/if}}
+		{{if $_GET.categorie == "rangement_transport"}}Rangement &amp; Transport{{/if}}
+		{{if $_GET.categorie == "autres"}}Autres{{/if}}
+	</h1>
+
+	<div class="annonces-grille">
+{{#load where="$$.categorie = :categorie OR ($$.categorie IS NULL AND :categorie = 'autres')" :categorie=$_GET.categorie order="id DESC"}}
+		<article class="annonce-card">
+			<h2><a href="annonce.html?id={{$id}}">{{$titre}}</a></h2>
+			<p class="annonce-categorie">
+				{{if $categorie == "peintures_techniques"}}Peintures &amp; Techniques{{/if}}
+				{{if $categorie == "pinceaux_outils_application"}}Pinceaux &amp; Outils d'application{{/if}}
+				{{if $categorie == "supports_peindre"}}Supports à peindre{{/if}}
+				{{if $categorie == "chevalets_mobilier_atelier"}}Chevalets &amp; Mobilier d’atelier{{/if}}
+				{{if $categorie == "rangement_transport"}}Rangement &amp; Transport{{/if}}
+				{{if $categorie == "autres" || !$categorie}}Autres{{/if}}
+			</p>
+			{{if $don == 1}}
+				<p class="annonce-don"><strong>Don</strong></p>
+			{{/if}}
+			{{if $prix}}
+				<p>Prix : {{$prix|money_currency}}</p>
+			{{elseif $don != 1}}
+				<p>Prix : à convenir</p>
+			{{/if}}
+			{{:assign photo_path="annonces/%d"|args:$id}}
+			<div class="annonce-photos">
+				{{#files path=$photo_path}}
+					{{if $mime|substr:0:6 == "image/"}}
+						<button type="button" class="annonce-photo-lien" data-photo="{{$url}}" aria-label="Agrandir la photo"><img src="{{$url}}" loading="lazy" decoding="async" alt="Photo de l'annonce : {{$titre}}"></button>
+					{{/if}}
+				{{/files}}
+			</div>
+			<p class="annonce-actions">{{:linkbutton href="annonce.html?id=%d"|args:$id label="Voir l'annonce"}}</p>
+		</article>
+	{{else}}
+		<p class="annonces-vide">Aucune annonce dans cette rubrique pour le moment.</p>
+	{{/load}}
+</div>
+</div>
+
+<dialog class="annonce-photo-apercu" aria-label="Agrandissement de la photo">
+	<button type="button" class="annonce-photo-fermer" aria-label="Fermer l’aperçu">×</button>
+	<img alt="">
+</dialog>
+<script src="{{$module.url}}apercu.js" defer></script>
+
+{{:include file="./_display_foot.html"}}

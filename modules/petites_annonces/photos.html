@@ -1,0 +1,51 @@
+{{:include file="./_display_head.html" title="Photos de l’annonce"}}
+
+<div class="petites-annonces">
+<p class="annonces-menu">
+{{#restrict section="config" level="admin"}}{{:linkbutton href="config.html" label="Paramètres"}}{{/restrict}}
+	{{:linkbutton href="index.html" label="Voir les annonces"}}
+	{{:include file="./_return_site.html"}}
+</p>
+
+{{#load id=$_GET.id|intval assign="annonce"}}
+{{else}}
+	{{:error message="Cette annonce n'existe pas."}}
+{{/load}}
+
+{{#restrict section="config" level="admin"}}
+{{else}}
+	{{if $annonce.id_auteur != $logged_user.id}}
+		{{:error message="Seul l'auteur ou un administrateur peut ajouter des photos."}}
+	{{/if}}
+{{/restrict}}
+
+<h2>Photos de « {{$annonce.titre}} »</h2>
+<p>Ajoutez jusqu'à trois photos à cette annonce. Téléversez les photos une par une.</p>
+
+{{:assign photo_path="annonces/%d"|args:$annonce.id}}
+{{:assign photo_count=0}}
+<div class="annonce-photos">
+	{{#files path=$photo_path}}
+		{{if $mime|substr:0:6 == "image/"}}
+			{{:assign photo_count="1+%d"|math:$photo_count}}
+			<button type="button" class="annonce-photo-lien" data-photo="{{$url}}" aria-label="Agrandir la photo"><img src="{{$url}}" loading="lazy" decoding="async" alt="Photo de l'annonce : {{$annonce.titre}}"></button>
+		{{/if}}
+	{{/files}}
+</div>
+
+{{if $photo_count < 3}}
+	{{:admin_files path=$photo_path upload=true edit=true}}
+{{else}}
+	<p class="alert">Cette annonce contient déjà trois photos.</p>
+{{/if}}
+
+<p>{{:linkbutton href="index.html" label="Terminer"}}</p>
+</div>
+
+<dialog class="annonce-photo-apercu" aria-label="Agrandissement de la photo">
+	<button type="button" class="annonce-photo-fermer" aria-label="Fermer l’aperçu">×</button>
+	<img alt="">
+</dialog>
+<script src="{{$module.url}}apercu.js" defer></script>
+
+{{:include file="./_display_foot.html"}}

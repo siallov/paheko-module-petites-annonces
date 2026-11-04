@@ -1,0 +1,50 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "titre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
+        },
+        "description": {
+            "type": "string",
+            "maxLength": 5000
+        },
+        "categorie": {
+            "type": "string",
+            "enum": [
+                "peintures_techniques",
+                "pinceaux_outils_application",
+                "supports_peindre",
+                "chevalets_mobilier_atelier",
+                "rangement_transport",
+                "autres"
+            ]
+        },
+        "prix": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "don": {
+            "type": "integer",
+            "enum": [0, 1]
+        },
+        "date_creation": {
+            "type": "string"
+        },
+        "id_auteur": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "id_auteur_nom": {
+            "type": "string",
+            "maxLength": 255
+        },
+        "id_auteur_email": {
+            "type": "string",
+            "maxLength": 255
+        }
+    },
+    "required": ["titre", "description", "categorie", "prix", "date_creation", "id_auteur"]
+}
